@@ -32,6 +32,9 @@ import sys
 # import external modules
 from kafka import KafkaConsumer
 
+# import time
+import time
+
 # count words
 from collections import Counter
 import re
@@ -50,6 +53,7 @@ from consumers.db_sqlite_case import init_db, insert_message
 # Function to process a single message
 # #####################################
 
+word_counts= Counter()
 
 def process_message(message: dict) -> None:
     """
@@ -62,14 +66,17 @@ def process_message(message: dict) -> None:
     logger.info("Called process_message() with:")
     logger.info(f"   {message=}")
     try:
+        # Extract and clean message text
+        message_text = message.get("message", "").lower()
+        words = re.findall(r'\b\w+\b', message_text)  # Extract words
+        word_counts.update(words)  # Update global word count
         processed_message = {
             "message": message.get("message"),
             "author": message.get("author"),
             "timestamp": message.get("timestamp"),
             "category": message.get("category"),
             "sentiment": float(message.get("sentiment", 0.0)),
-            "keyword_mentioned": message.get("keyword_mentioned"),
-            "message_length": int(message.get("message_length", 0)),
+            "word_count": len(words),
         }
         logger.info(f"Processed message: {processed_message}")
         return processed_message
@@ -93,6 +100,7 @@ def consume_messages_from_kafka(
     """
     Consume new messages from Kafka topic and process them.
     Each message is expected to be JSON-formatted.
+    Track the number of occurences of the different words used
 
     Args:
     - topic (str): Kafka topic to consume messages from.
@@ -151,6 +159,9 @@ def consume_messages_from_kafka(
             processed_message = process_message(message.value)
             if processed_message:
                 insert_message(processed_message, sql_path)
+            # Tracking word frequency over the course of 10 messages
+            if sum(word_counts.values()) % 10 == 0:
+                logger.info(f"Word Frequency: {word_counts.most_common(10)}")
 
     except Exception as e:
         logger.error(f"ERROR: Could not consume messages from Kafka: {e}")
