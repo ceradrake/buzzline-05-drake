@@ -169,6 +169,9 @@ What files are in the consumers folder?
 - What parts are most interesting to you?
 - What parts are most challenging? 
 
+
+## Modifying the Consumer
+I want to track keywords. I want to track word instanced over a period of time and author. Then I want to generate a list of the top words used to help track trends. 
 ---
 
 ## Later Work Sessions
