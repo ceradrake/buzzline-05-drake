@@ -32,6 +32,10 @@ import sys
 # import external modules
 from kafka import KafkaConsumer
 
+# count words
+from collections import Counter
+import re
+
 # import from local modules
 import utils.utils_config as config
 from utils.utils_consumer import create_kafka_consumer
