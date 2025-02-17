@@ -66,7 +66,8 @@ def init_db(db_path: pathlib.Path):
                     category TEXT,
                     sentiment REAL,
                     keyword_mentioned TEXT,
-                    message_length INTEGER
+                    message_length INTEGER,
+                    word_count INTEGER
                 )
             """
             )
@@ -74,6 +75,7 @@ def init_db(db_path: pathlib.Path):
         logger.info(f"SUCCESS: Database initialized and table ready at {db_path}.")
     except Exception as e:
         logger.error(f"ERROR: Failed to initialize a sqlite database at {db_path}: {e}")
+
 
 
 #####################################
@@ -111,12 +113,28 @@ def insert_message(message: dict, db_path: pathlib.Path) -> None:
                     message["sentiment"],
                     message["keyword_mentioned"],
                     message["message_length"],
+                    message["word_count"],
                 ),
             )
             conn.commit()
         logger.info("Inserted one message into the database.")
     except Exception as e:
         logger.error(f"ERROR: Failed to insert message into the database: {e}")
+def get_word_frequencies(db_path: pathlib.Path):
+    """ 
+    Get word frequency from the messages
+    """
+    try: 
+        with sqlite3.conect(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT word_count FROM streamed_messages")
+            rows = cursor.fetchall()
+            
+            word_counts = [row[0] for row in rows]  # Extract word counts
+            return word_counts
+    except Exception as e:
+        logger.error(f"ERROR: Could not retrieve word frequencies: {e}")
+        return []
 
 
 #####################################
@@ -188,6 +206,7 @@ def main():
         logger.error(f"ERROR: Failed to retrieve or delete test message: {e}")
 
     logger.info("Finished testing.")
+
 
 
 # #####################################

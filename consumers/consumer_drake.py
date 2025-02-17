@@ -162,6 +162,8 @@ def consume_messages_from_kafka(
             # Tracking word frequency over the course of 10 messages
             if sum(word_counts.values()) % 10 == 0:
                 logger.info(f"Word Frequency: {word_counts.most_common(10)}")
+                word_frequencies = get_word_frequencies(sql_path)
+                logger.info(f"Retrieved Word Frequencies from DB: {word_frequencies}")
 
     except Exception as e:
         logger.error(f"ERROR: Could not consume messages from Kafka: {e}")
